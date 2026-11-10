@@ -1,12 +1,14 @@
 import tempfile
 import unittest
 import json
+import os
 import threading
 import urllib.error
 import urllib.request
 from pathlib import Path
+from unittest.mock import patch
 
-from user_management import AuthService, FakeMailer, InvalidCode, UserExists, create_server
+from user_management import AuthService, FakeMailer, InvalidCode, UserExists, create_server, load_dotenv
 
 
 class AuthServiceTests(unittest.TestCase):
@@ -59,6 +61,15 @@ class AuthServiceTests(unittest.TestCase):
                 self.service.register("person@example.com", "correct horse battery", "000000")
         with self.assertRaises(InvalidCode):
             self.service.register("person@example.com", "correct horse battery", "482913")
+
+    def test_dotenv_loads_values_without_overriding_process_environment(self):
+        env_file = Path(self.temp.name) / ".env"
+        env_file.write_text("# mail settings\nSMTP_HOST = smtp.example.com\nSMTP_PASSWORD='app secret'\nPORT=9000\n", encoding="utf-8")
+        with patch.dict(os.environ, {"PORT": "8100"}, clear=True):
+            load_dotenv(env_file)
+            self.assertEqual(os.environ["SMTP_HOST"], "smtp.example.com")
+            self.assertEqual(os.environ["SMTP_PASSWORD"], "app secret")
+            self.assertEqual(os.environ["PORT"], "8100")
 
 
 class HttpApiTests(unittest.TestCase):

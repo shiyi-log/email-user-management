@@ -13,11 +13,9 @@
 
 ## 配置 SMTP
 
-复制 .env.example 为 .env 并填入邮件服务商提供的 SMTP 地址、端口、账号及应用专用密码。应用不会自动读取 .env，启动前在终端导入：
+复制 .env.example 为 .env 并填入邮件服务商提供的 SMTP 地址、端口、账号及应用专用密码。启动程序时会自动读取项目目录中的 .env；现有进程环境变量优先，不会被文件内容覆盖：
 
-    set -a
-    . ./.env
-    set +a
+    cp .env.example .env
     python3 user_management.py
 
 通常使用 587 端口和 STARTTLS。若服务商提供 SSL SMTP，设置 SMTP_USE_SSL=true、SMTP_PORT=465、SMTP_USE_TLS=false。SMTP_FROM 必须是该账号获准使用的发件地址。将 APP_SECRET 替换成长随机值；更换后尚未验证的验证码会失效。
